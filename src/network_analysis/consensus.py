@@ -20,7 +20,7 @@ class ConsensusClusters:
         g = nx.Graph()
         syms = corr.columns.tolist()
         for i, j in zip(*mst.nonzero()):
-            g.add_edge(syms[i], syms[j], weight=float(dist[i, j]))
+            g.add_edge(syms[i], syms[j], weight=float(dist.iloc[i, j]))
         return community_louvain.best_partition(g)
 
     def update(self, corr: pd.DataFrame) -> Dict[str, int]:
@@ -41,4 +41,5 @@ class ConsensusClusters:
             if v / self.window >= self.threshold:
                 stable.add_edge(i, j)
 
+        stable.add_nodes_from(corr.columns)
         return community_louvain.best_partition(stable) if stable.edges else part
