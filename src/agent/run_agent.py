@@ -4,13 +4,14 @@ import argparse
 import logging
 from datetime import datetime, timedelta
 import pandas as pd
-import yaml
+import yaml  # type: ignore
 
 from ..alpha.arima_filter import arima_signal
 from ..alpha.features import build_feature_frame
 from ..alpha.model import PumpClassifier
 from ..data_ingest.price_loader import PriceLoader
 from ..data_ingest.social_scraper import SocialScraper
+from ..data_ingest.volume_anomaly import volume_zscore
 from ..network_analysis.consensus import ConsensusClusters
 from ..portfolio.hrp_allocator import cluster_aware_hrp
 from ..portfolio.representatives import pick_representatives
@@ -86,6 +87,8 @@ def main() -> None:
         btc = slice_df["BTC/USDT"].pct_change().dropna() if "BTC/USDT" in slice_df else pd.Series()
 
         for sym in reps:
+            if volume_zscore(volume_df[sym]).iloc[-1] < cfg["model"]["volume_sigma"]:
+                continue
             if proba.get(sym, 0) < cfg["model"]["min_confidence"]:
                 continue
             series_vals = slice_df[sym].tail(60).tolist()

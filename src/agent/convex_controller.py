@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 from typing import Any, Dict, Optional, cast
 
-import yaml
+import yaml  # type: ignore
 
 from ..options.deribit_router import DeribitRouter
 from ..options.position_manager import PositionManager
