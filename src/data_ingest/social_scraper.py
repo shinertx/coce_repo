@@ -1,14 +1,38 @@
-from __future__ import annotations
-import logging
-from typing import List
+import os
+import tweepy
 from textblob import TextBlob
 
-logger = logging.getLogger(__name__)
+TWITTER_BEARER = os.environ.get("TWITTER_BEARER", "")
 
 class SocialScraper:
-    """Placeholder sentiment - replace with real scrape."""
-    def fetch_recent(self, symbol: str, n: int = 20) -> List[str]:
-        return [f"{symbol} to the moon!"] * n  # TODO: real posts
+    def __init__(self):
+        if not TWITTER_BEARER:
+            raise RuntimeError("Missing TWITTER_BEARER in .env")
+        self.client = tweepy.Client(bearer_token=TWITTER_BEARER, wait_on_rate_limit=True)
 
-    def polarity(self, posts: List[str]) -> float:
-        return sum(TextBlob(p).sentiment.polarity for p in posts) / max(len(posts), 1)
+    def fetch_recent(self, symbol: str, n: int = 20) -> list[str]:
+        """
+        Fetches recent tweets mentioning the base asset (BTC, ETH, etc.)
+        Returns a list of tweet texts (English, no retweets).
+        """
+        base = symbol.split("/")[0]
+        try:
+            query = f'"{base}" -is:retweet lang:en'
+            tweets = self.client.search_recent_tweets(query=query, max_results=min(n, 100)).data or []
+            return [t.text for t in tweets]
+        except Exception as exc:
+            print(f"[Sentiment] Failed to fetch tweets for {base}: {exc}")
+            return []
+
+    def polarity(self, posts: list[str]) -> float:
+        """
+        Returns the average sentiment polarity across all posts.
+        """
+        if not posts:
+            return 0.0
+        try:
+            polarities = [TextBlob(p).sentiment.polarity for p in posts]
+            return sum(polarities) / len(polarities)
+        except Exception as exc:
+            print(f"[Sentiment] Error computing polarity: {exc}")
+            return 0.0
