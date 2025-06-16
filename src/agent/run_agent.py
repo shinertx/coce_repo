@@ -79,7 +79,8 @@ def main() -> None:
         for sym in reps:
             if proba.get(sym, 0) < cfg["model"]["min_confidence"]:
                 continue
-            if not arima_signal(slice_df[sym].tail(60).values, tuple(cfg["model"]["arima_order"]), 0.5):
+            series_vals = slice_df[sym].tail(60).tolist()
+            if not arima_signal(series_vals, tuple(cfg["model"]["arima_order"]), 0.5):
                 continue
             tm.execute_signal(
                 sym,
