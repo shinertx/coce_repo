@@ -4,7 +4,6 @@ version = "0.3.0"
 description = "Cluster Outlier Catalyst Engine"
 authors = ["Benji"]
 packages = [{include = "src"}]
-python = "^3.10"
 
 [tool.poetry.dependencies]
 python = "^3.10"
@@ -32,7 +31,7 @@ types-requests = "^2.31"
 
 [tool.black]
 line-length = 100
-target-version = ['py310']
+target-version = ["py310"]
 
 [tool.ruff]
 src = ["src"]
