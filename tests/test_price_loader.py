@@ -1,0 +1,12 @@
+from datetime import datetime, timedelta
+import pandas as pd
+from src.data_ingest.price_loader import PriceLoader
+
+def test_loader(monkeypatch):
+    pl = PriceLoader()
+    monkeypatch.setattr(
+        pl.ex, "fetch_ohlcv",
+        lambda *a, **k: [[0,1,1,1,1,10],[60_000,1,1,1,1,11]]
+    )
+    df = pl.load("BTC/USDT", datetime.utcnow()-timedelta(days=1), datetime.utcnow())
+    assert isinstance(df, pd.DataFrame)

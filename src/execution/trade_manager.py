@@ -1,0 +1,93 @@
+from __future__ import annotations
+import logging
+from dataclasses import dataclass
+from datetime import datetime, timezone
+from typing import Dict
+import pandas as pd
+from ..execution.slippage import sqrt_slippage
+from ..risk_guardrails.liquidity_limits import adv_cap_check
+from ..risk_guardrails.max_drawdown import DrawdownTracker
+from ..risk_guardrails.var_check import hist_var_check
+from ..risk_guardrails.corr_spike import CorrSpikeSentinel
+from ..state.persistence import save_state, load_state
+from ..utils.logging_utils import setup_logging
+from .ccxt_router import CcxtRouter
+
+setup_logging()
+logger = logging.getLogger(__name__)
+
+@dataclass
+class Trade:
+    ts: str
+    symbol: str
+    side: str
+    size: float
+    price: float
+    confidence: float
+    risk: str
+    slip_bps: float
+
+class TradeManager:
+    def __init__(self, capital_usd: float, risk_cfg: Dict[str, float]) -> None:
+        self.capital, self.risk_cfg = capital_usd, risk_cfg
+        self.router = CcxtRouter()
+        self.drawdown = DrawdownTracker(capital_usd)
+        self.sentinel = CorrSpikeSentinel(threshold=risk_cfg["corr_spike_thresh"])
+        state = load_state()
+        if state and "equity_curve" in state:
+            self.drawdown.equity_curve = state["equity_curve"]
+
+    def _persist(self) -> None:
+        save_state({"equity_curve": self.drawdown.equity_curve})
+
+    def execute_signal(
+        self,
+        symbol: str,
+        proba: float,
+        price_series: pd.Series,
+        adv_usd: float,
+        btc_series: pd.Series,
+        alt_df: pd.DataFrame,
+        weight: float,
+    ) -> Trade | None:
+        if not self.sentinel.check(btc_series, alt_df):
+            logger.warning("Corr-sentinel tripped")
+            return None
+
+        price = price_series.iloc[-1]
+        order_usd = max(self.capital * weight, 0)
+        if order_usd == 0:
+            return None
+
+        size = order_usd / price
+        slip_frac = sqrt_slippage(order_usd, adv_usd)
+        price_exec = price * (1 + slip_frac)
+
+        risk_pass = all(
+            [
+                adv_cap_check(order_usd, adv_usd, cap_pct=self.risk_cfg["adv_cap_pct"]),
+                hist_var_check(price_series.pct_change().dropna(), self.risk_cfg["var_confidence"]),
+                self.drawdown.within_limit(self.risk_cfg["max_drawdown_pct"]),
+            ]
+        )
+        tag = "PASS" if risk_pass else "FAIL"
+
+        trade = Trade(
+            ts=datetime.now(tz=timezone.utc).isoformat(timespec="seconds"),
+            symbol=symbol,
+            side="BUY",
+            size=size,
+            price=price_exec,
+            confidence=proba,
+            risk=tag,
+            slip_bps=slip_frac * 10_000,
+        )
+        logger.info(trade.__dict__)
+        if risk_pass:
+            try:
+                self.router.place_order(symbol, "buy", size)
+            except Exception as exc:
+                logger.error("Order failed %s", exc)
+            self._persist()
+            return trade
+        return None
