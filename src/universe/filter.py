@@ -3,41 +3,15 @@ import logging
 from datetime import datetime, timedelta
 from typing import List, Callable
 import ccxt, pandas as pd
-import requests, functools, os
+
+from .supply import coingecko_supply
 
 logger = logging.getLogger(__name__)
 
-COINGECKO_API_KEY = os.environ.get("COINGECKO_API_KEY", "")
-
-# Map from ticker (BTC, ETH, SOL) to CoinGecko's coin_id
-COINGECKO_ID_MAP = {
-    "BTC": "bitcoin",
-    "ETH": "ethereum",
-    "SOL": "solana",
-    "ADA": "cardano",
-    "DOGE": "dogecoin",
-    # Add more as needed
-}
-
-@functools.lru_cache(maxsize=128)
-def coingecko_supply(symbol: str) -> float:
-    """Fetch circulating supply from CoinGecko for the base asset of the pair."""
-    ticker = symbol.split("/")[0].upper()
-    coin_id = COINGECKO_ID_MAP.get(ticker, ticker.lower())
-    url = f"https://api.coingecko.com/api/v3/coins/{coin_id}"
-    headers = {"x-cg-pro-api-key": COINGECKO_API_KEY} if COINGECKO_API_KEY else {}
-    try:
-        r = requests.get(url, headers=headers, timeout=10)
-        r.raise_for_status()
-        supply = r.json()["market_data"]["circulating_supply"]
-        logger.info(f"CoinGecko supply for {symbol}: {supply}")
-        return float(supply)
-    except Exception as exc:
-        logger.warning(f"Failed to fetch supply for {symbol}: {exc}")
-        return 0.0  # will cause symbol to be dropped if mcap filter is on
 
 class UniverseFilter:
     """Filter symbols by ADV and market-cap thresholds."""
+
     def __init__(
         self,
         *,
