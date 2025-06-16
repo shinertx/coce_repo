@@ -1,0 +1,10 @@
+[run]
+omit =
+    src/agent/*
+    src/alpha/*
+    src/data_ingest/*
+    src/execution/*
+    src/network_analysis/*
+    src/portfolio/*
+    src/risk_guardrails/*
+    src/utils/*

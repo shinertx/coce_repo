@@ -23,3 +23,22 @@ def test_coingecko_supply(monkeypatch):
     uf = UniverseFilter(min_adv_usd=0, min_mcap_usd=0)
     monkeypatch.setattr(uf.ex, "fetch_ticker", lambda s: {"last": 2})
     assert uf._mcap("BTC/USDT") == 2_000_000_000
+
+
+def test_filter_adv_and_mcap(monkeypatch):
+    def fake_get(*args, **kwargs):
+        return DummyResponse({"market_data": {"circulating_supply": 1_000_000_000}})
+
+    monkeypatch.setattr(supply_mod.requests, "get", fake_get)
+
+    uf = UniverseFilter(min_adv_usd=20, min_mcap_usd=10)
+    monkeypatch.setattr(
+        uf.ex,
+        "fetch_ohlcv",
+        lambda *a, **k: [
+            [0, 0, 0, 0, 2, 10],
+            [60_000, 0, 0, 0, 2, 10],
+        ],
+    )
+    monkeypatch.setattr(uf.ex, "fetch_ticker", lambda s: {"last": 2})
+    assert uf.filter(["BTC/USDT"]) == ["BTC/USDT"]
