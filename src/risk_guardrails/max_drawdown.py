@@ -1,12 +1,12 @@
 from __future__ import annotations
 import pandas as pd
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Sequence
 
 @dataclass
 class DrawdownTracker:
     starting_equity: float
-    equity_curve: pd.Series = pd.Series(dtype=float)
+    equity_curve: pd.Series = field(default_factory=lambda: pd.Series(dtype=float))
 
     def update(self, returns: Sequence[float]) -> None:
         self.equity_curve = pd.concat(

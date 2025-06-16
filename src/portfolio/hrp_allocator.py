@@ -1,6 +1,7 @@
 from __future__ import annotations
 import logging, numpy as np, pandas as pd
 from scipy.cluster.hierarchy import linkage, dendrogram
+from scipy.spatial.distance import squareform
 from typing import Dict
 
 logger = logging.getLogger(__name__)
@@ -8,8 +9,8 @@ logger = logging.getLogger(__name__)
 def _leaf_weights(cov: pd.DataFrame) -> Dict[str, float]:
     corr = cov.corr()
     dist = ((1 - corr) / 2) ** 0.5
-    link = linkage(dist, "single")
-    order = dendrogram(link, no_plot=True)["ivl"]
+    link = linkage(squareform(dist), "single")
+    order = dendrogram(link, labels=dist.index, no_plot=True)["ivl"]
     ivp = 1 / np.diag(cov.loc[order, order])
     return dict(zip(order, ivp / ivp.sum()))
 
