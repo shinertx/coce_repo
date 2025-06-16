@@ -1,5 +1,8 @@
 from __future__ import annotations
-import numpy as np, pandas as pd, logging
+
+import logging
+import numpy as np
+import pandas as pd
 logger = logging.getLogger(__name__)
 
 def hist_var_check(returns: pd.Series, conf: float, var_floor: float = -0.03) -> bool:

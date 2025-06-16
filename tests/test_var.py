@@ -1,4 +1,3 @@
-import numpy as np, pandas as pd
 from src.risk_guardrails.max_drawdown import DrawdownTracker
 
 def test_dd():

@@ -1,7 +1,9 @@
 from __future__ import annotations
 import logging
 from pathlib import Path
-import joblib, pandas as pd
+
+import joblib
+import pandas as pd
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 

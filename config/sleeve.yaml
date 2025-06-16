@@ -1,22 +1,8 @@
-# Convexity Sleeve default configuration
-# Values follow units indicated below
-
-# capital allocation
-budget_pct_nav: 0.5        # fraction of NAV allocated daily (0 < ≤ 1.0)
-
-# execution venue
-exchange: "deribit"       # option venue string
-
-# trade parameters
-moneyness: 5.0            # strike/spot ratio ≥ 1.0
-days_to_expiry: [1, 2, 3] # list of integer expiries (1–30)
-
-# volatility filter
-iv_percentile_max: 20     # top IV percentile filter (0 < ≤ 100)
-
-# order management
-slippage_bps: 15          # max bps slippage per fill (≥ 0)
-take_profit_pct: 900      # profit target as percent of entry (≥ 0)
-
-# caching
-cache_ttl_min: 10         # cache TTL in minutes (≥ 1)
+budget_pct_nav: 0.5
+days_to_expiry: [1]
+take_profit_pct: 100
+exchange: deribit
+iv_percentile_max: 100
+moneyness: 1.0
+slippage_bps: 0
+cache_ttl_min: 1

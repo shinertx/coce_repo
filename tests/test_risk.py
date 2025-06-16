@@ -1,4 +1,5 @@
-import numpy as np, pandas as pd
+import numpy as np
+import pandas as pd
 from src.risk_guardrails.var_check import var_check
 
 def test_var():

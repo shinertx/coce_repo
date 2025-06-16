@@ -1,8 +1,11 @@
 from __future__ import annotations
+
 import logging
 from datetime import datetime, timedelta
-from typing import List, Callable
-import ccxt, pandas as pd
+from typing import Callable, List
+
+import ccxt
+import pandas as pd
 
 from .supply import coingecko_supply
 

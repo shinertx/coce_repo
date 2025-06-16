@@ -1,8 +1,12 @@
 from __future__ import annotations
+
 import logging
 from collections import Counter, deque
 from typing import Deque, Dict
-import networkx as nx, numpy as np, pandas as pd
+
+import networkx as nx
+import numpy as np
+import pandas as pd
 from community import community_louvain
 from scipy.sparse.csgraph import minimum_spanning_tree
 

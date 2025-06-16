@@ -1,5 +1,7 @@
 from __future__ import annotations
-import math, logging
+
+import logging
+import math
 
 logger = logging.getLogger(__name__)
 

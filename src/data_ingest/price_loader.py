@@ -1,7 +1,9 @@
 from __future__ import annotations
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Literal
-import ccxt, pandas as pd
+
+import ccxt
+import pandas as pd
 
 class PriceLoader:
     def __init__(self, exchange: str = "binance") -> None:

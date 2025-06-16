@@ -1,5 +1,7 @@
 from __future__ import annotations
-import logging, networkx as nx
+
+import logging
+import networkx as nx
 from community import community_louvain
 from typing import Dict
 

@@ -1,4 +1,5 @@
-import logging, json
+import json
+import logging
 from src.utils.logging_utils import JsonlFormatter
 
 def test_json():

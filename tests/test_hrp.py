@@ -1,4 +1,5 @@
-import numpy as np, pandas as pd
+import numpy as np
+import pandas as pd
 from src.portfolio.hrp_allocator import cluster_aware_hrp
 
 def test_hrp():
