@@ -1,5 +1,7 @@
 from __future__ import annotations
-import logging, pandas as pd
+
+import logging
+import pandas as pd
 from pathlib import Path
 
 _MEDIAN_CACHE = Path("data/btc_alt_corr.csv")

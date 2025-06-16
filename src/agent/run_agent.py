@@ -1,7 +1,10 @@
 from __future__ import annotations
-import argparse, logging
+
+import argparse
+import logging
 from datetime import datetime, timedelta
-import pandas as pd, yaml
+import pandas as pd
+import yaml
 
 from ..alpha.arima_filter import arima_signal
 from ..alpha.features import build_feature_frame
@@ -26,9 +29,15 @@ def load_cfg(path: str):
 def main() -> None:
     p = argparse.ArgumentParser()
     p.add_argument("--mode", choices=["sim"], default="sim")
+    p.add_argument("--sleeve", choices=["none", "convex"], default="none")
     p.add_argument("--config", default="config/base.yaml")
     args = p.parse_args()
     cfg = load_cfg(args.config)
+
+    if args.sleeve == "convex":
+        from .convex_controller import run_convex
+        run_convex(cfg["capital_usd"], "config/sleeve.yaml")
+        return
 
     pl = PriceLoader()
     social = SocialScraper()

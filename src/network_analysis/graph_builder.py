@@ -1,5 +1,9 @@
 from __future__ import annotations
-import logging, networkx as nx, numpy as np, pandas as pd
+
+import logging
+import networkx as nx
+import numpy as np
+import pandas as pd
 from scipy.sparse.csgraph import minimum_spanning_tree
 
 logger = logging.getLogger(__name__)

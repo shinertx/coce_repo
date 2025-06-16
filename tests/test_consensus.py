@@ -1,4 +1,5 @@
-import numpy as np, pandas as pd
+import numpy as np
+import pandas as pd
 from src.network_analysis.consensus import ConsensusClusters
 
 def test_consensus():

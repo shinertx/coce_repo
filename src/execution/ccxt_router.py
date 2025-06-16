@@ -1,5 +1,9 @@
 from __future__ import annotations
-import os, logging, ccxt
+
+import logging
+import os
+
+import ccxt
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -17,3 +21,11 @@ class CcxtRouter:
         if price:
             return self.client.create_limit_order(symbol, side, size, price)
         return self.client.create_market_order(symbol, side, size)
+
+    def fetch_price(self, symbol: str) -> float:
+        """Latest traded price from exchange."""
+        try:
+            return float(self.client.fetch_ticker(symbol)["last"])
+        except Exception as exc:  # pragma: no cover - network errors
+            logger.error("Price fetch failed %s", exc)
+            return 0.0
