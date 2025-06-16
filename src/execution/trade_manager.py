@@ -66,7 +66,11 @@ class TradeManager:
         risk_pass = all(
             [
                 adv_cap_check(order_usd, adv_usd, cap_pct=self.risk_cfg["adv_cap_pct"]),
-                hist_var_check(price_series.pct_change().dropna(), self.risk_cfg["var_confidence"]),
+                hist_var_check(
+                    price_series.pct_change().dropna(),
+                    self.risk_cfg["var_confidence"],
+                    self.risk_cfg.get("var_floor", -0.03),
+                ),
                 self.drawdown.within_limit(self.risk_cfg["max_drawdown_pct"]),
             ]
         )
@@ -86,6 +90,7 @@ class TradeManager:
         if risk_pass:
             try:
                 self.router.place_order(symbol, "buy", size)
+                self.drawdown.update([price_exec / price - 1])
             except Exception as exc:
                 logger.error("Order failed %s", exc)
             self._persist()
