@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 def median_btc_alt_corr(btc: pd.Series, alt: pd.DataFrame) -> float:
     joined = alt.loc[btc.index]
-    return joined.apply(lambda s: s.corr(btc)).median()
+    return float(joined.apply(lambda s: s.corr(btc)).median())
 
 class CorrSpikeSentinel:
     """Block trading when BTC-alt median corr ≥ threshold."""

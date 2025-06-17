@@ -16,5 +16,6 @@ class DrawdownTracker:
     def within_limit(self, max_dd_pct: float) -> bool:
         if self.equity_curve.empty:
             return True
-        peak, trough = self.equity_curve.max(), self.equity_curve.min()
+        peak = float(self.equity_curve.max())
+        trough = float(self.equity_curve.min())
         return (peak - trough) / peak * 100 <= max_dd_pct

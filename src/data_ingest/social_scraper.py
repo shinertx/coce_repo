@@ -5,7 +5,7 @@ from textblob import TextBlob
 TWITTER_BEARER = os.environ.get("TWITTER_BEARER", "")
 
 class SocialScraper:
-    def __init__(self):
+    def __init__(self) -> None:
         if not TWITTER_BEARER:
             raise RuntimeError("Missing TWITTER_BEARER in .env")
         self.client = tweepy.Client(bearer_token=TWITTER_BEARER, wait_on_rate_limit=True)
@@ -31,7 +31,7 @@ class SocialScraper:
         if not posts:
             return 0.0
         try:
-            polarities = [TextBlob(p).sentiment.polarity for p in posts]
+            polarities = [float(TextBlob(p).sentiment.polarity) for p in posts]
             return sum(polarities) / len(polarities)
         except Exception as exc:
             print(f"[Sentiment] Error computing polarity: {exc}")

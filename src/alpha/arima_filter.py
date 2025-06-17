@@ -11,12 +11,12 @@ def arima_signal(prices: Sequence[float], order: Tuple[int, int, int], zcut: flo
     series = pd.Series(prices)
     if len(series) < 60:
         return False
-    σ = series.pct_change().std(ddof=0)
-    if σ == 0:
+    sigma = float(series.pct_change().std(ddof=0))
+    if sigma == 0:
         return False
     try:
-        fcast = ARIMA(series, order=order).fit().forecast()[0]
-        z = (fcast - series.iloc[-1]) / (σ * series.iloc[-1])
+        fcast = float(ARIMA(series, order=order).fit().forecast()[0])
+        z = (fcast - float(series.iloc[-1])) / (sigma * float(series.iloc[-1]))
         return z > zcut
     except Exception as exc:  # noqa: BLE001
         logger.warning("ARIMA fail: %s", exc)

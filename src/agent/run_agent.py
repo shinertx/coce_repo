@@ -19,13 +19,15 @@ from ..risk_guardrails.turnover import TurnoverLimiter
 from ..universe.filter import UniverseFilter
 from ..utils.logging_utils import setup_logging
 from ..execution.trade_manager import TradeManager
+from typing import Any, Dict, cast
 
 setup_logging()
 logger = logging.getLogger(__name__)
 
-def load_cfg(path: str):
+
+def load_cfg(path: str) -> Dict[str, Any]:
     with open(path) as f:
-        return yaml.safe_load(f)
+        return cast(Dict[str, Any], yaml.safe_load(f))
 
 def main() -> None:
     p = argparse.ArgumentParser()

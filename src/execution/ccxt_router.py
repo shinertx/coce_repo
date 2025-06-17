@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import os
+from typing import Any, Dict, cast
 
 import ccxt
 from dotenv import load_dotenv
@@ -17,10 +18,12 @@ class CcxtRouter:
             {"apiKey": os.getenv("EXCHANGE_API_KEY"), "secret": os.getenv("EXCHANGE_API_SECRET")}
         )
 
-    def place_order(self, symbol: str, side: str, size: float, price: float | None = None):
+    def place_order(
+        self, symbol: str, side: str, size: float, price: float | None = None
+    ) -> Dict[str, Any]:
         if price:
-            return self.client.create_limit_order(symbol, side, size, price)
-        return self.client.create_market_order(symbol, side, size)
+            return cast(Dict[str, Any], self.client.create_limit_order(symbol, side, size, price))
+        return cast(Dict[str, Any], self.client.create_market_order(symbol, side, size))
 
     def fetch_price(self, symbol: str) -> float:
         """Latest traded price from exchange."""
