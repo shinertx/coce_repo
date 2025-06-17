@@ -16,8 +16,11 @@ from .ccxt_router import CcxtRouter
 setup_logging()
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class Trade:
+    """Executed trade record."""
+
     ts: str
     symbol: str
     side: str
@@ -27,8 +30,13 @@ class Trade:
     risk: str
     slip_bps: float
 
+
 class TradeManager:
+    """Handle order placement and risk checks."""
+
     def __init__(self, capital_usd: float, risk_cfg: Dict[str, float]) -> None:
+        """Create a new manager with ``capital_usd`` and risk parameters."""
+
         self.capital, self.risk_cfg = capital_usd, risk_cfg
         self.router = CcxtRouter()
         self.drawdown = DrawdownTracker(capital_usd)
@@ -50,6 +58,8 @@ class TradeManager:
         alt_df: pd.DataFrame,
         weight: float,
     ) -> Trade | None:
+        """Execute a buy signal if risk checks pass."""
+
         if not self.sentinel.check(btc_series, alt_df):
             logger.warning("Corr-sentinel tripped")
             return None

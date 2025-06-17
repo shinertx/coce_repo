@@ -23,11 +23,28 @@ from ..execution.trade_manager import TradeManager
 setup_logging()
 logger = logging.getLogger(__name__)
 
-def load_cfg(path: str):
+
+def load_cfg(path: str) -> dict:
+    """Load a YAML configuration file.
+
+    Parameters
+    ----------
+    path:
+        Path to the YAML file.
+
+    Returns
+    -------
+    dict
+        Parsed configuration dictionary.
+    """
+
     with open(path) as f:
         return yaml.safe_load(f)
 
+
 def main() -> None:
+    """Entry point for agent execution."""
+
     p = argparse.ArgumentParser()
     p.add_argument("--mode", choices=["sim"], default="sim")
     p.add_argument("--sleeve", choices=["none", "convex"], default="none")
@@ -37,6 +54,7 @@ def main() -> None:
 
     if args.sleeve == "convex":
         from .convex_controller import run_convex
+
         run_convex(cfg["capital_usd"], "config/sleeve.yaml")
         return
 
@@ -103,6 +121,7 @@ def main() -> None:
                 slice_df[reps],
                 weights.get(sym, 0),
             )
+
 
 if __name__ == "__main__":
     main()
