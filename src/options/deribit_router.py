@@ -15,6 +15,8 @@ class DeribitRouter:
     BASE = "https://www.deribit.com/api/v2/"
 
     def __init__(self) -> None:
+        """Create a session and authenticate using environment credentials."""
+
         self.client_id = os.getenv("DERIBIT_CLIENT_ID")
         self.client_secret = os.getenv("DERIBIT_CLIENT_SECRET")
         self.session = requests.Session()
@@ -22,6 +24,8 @@ class DeribitRouter:
         self.authenticate()
 
     def authenticate(self) -> None:
+        """Obtain an access token from Deribit."""
+
         payload: Dict[str, str] = {
             "client_id": self.client_id or "",
             "client_secret": self.client_secret or "",
@@ -34,6 +38,8 @@ class DeribitRouter:
         self.session.headers["Authorization"] = f"Bearer {self.token}"
 
     def fetch_price(self, symbol: str) -> float:
+        """Latest trade price for ``symbol``."""
+
         resp = self.session.get(
             self.BASE + "public/get_last_trades_by_instrument",
             params={"instrument_name": symbol, "count": "1"},
@@ -45,6 +51,8 @@ class DeribitRouter:
     def place_order(
         self, symbol: str, side: str, size: float, price: float | None = None
     ) -> Dict[str, Any]:
+        """Place a limit order and return the API response."""
+
         resp = self.session.post(
             # TODO: validate live endpoint naming for buy/sell
             self.BASE + f"private/{'buy' if side == 'buy' else 'sell'}",

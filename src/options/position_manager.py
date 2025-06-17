@@ -4,18 +4,24 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Callable, List
 
+
 @dataclass
 class OptionPosition:
+    """Details of an individual option holding."""
+
     symbol: str
     size: float
     entry_price: float
     expiry: datetime
     take_profit: float
 
+
 class PositionManager:
     """Track open option positions and budget usage."""
 
     def __init__(self) -> None:
+        """Initialize empty position list and budget tracker."""
+
         self.positions: List[OptionPosition] = []
         self.budget_spent: float = 0.0
 
@@ -27,13 +33,19 @@ class PositionManager:
         expiry: datetime,
         tp_pct: float,
     ) -> None:
+        """Record a newly purchased option position."""
+
         tp = price * (1 + tp_pct / 100)
         self.positions.append(
-            OptionPosition(symbol=symbol, size=size, entry_price=price, expiry=expiry, take_profit=tp)
+            OptionPosition(
+                symbol=symbol, size=size, entry_price=price, expiry=expiry, take_profit=tp
+            )
         )
         self.budget_spent += price * size
 
     def open_premium(self) -> float:
+        """Total premium paid for all open positions."""
+
         return sum(p.entry_price * p.size for p in self.positions)
 
     def check_exits(self, price_fn: Callable[[str], float]) -> List[OptionPosition]:

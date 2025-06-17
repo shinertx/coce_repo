@@ -4,13 +4,19 @@ from typing import Dict
 
 logger = logging.getLogger(__name__)
 
+
 class TurnoverLimiter:
     """Throttle portfolio turnover to cap_pct_nav per rebalance."""
+
     def __init__(self, cap_pct_nav: float) -> None:
+        """Create a limiter allowing ``cap_pct_nav`` percent turnover."""
+
         self.cap = cap_pct_nav / 100
         self.prev: Dict[str, float] = {}
 
     def limit(self, new: Dict[str, float]) -> Dict[str, float]:
+        """Return weights after applying turnover throttle."""
+
         if not self.prev:
             self.prev = new
             return new

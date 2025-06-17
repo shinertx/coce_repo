@@ -39,6 +39,8 @@ class UniverseFilter:
         return price * supply if supply > 0 else 0.0
 
     def filter(self, symbols: List[str]) -> List[str]:
+        """Return symbols passing ADV and market-cap thresholds."""
+
         tradable: List[str] = []
         for s in symbols:
             try:

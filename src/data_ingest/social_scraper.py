@@ -4,8 +4,13 @@ from textblob import TextBlob
 
 TWITTER_BEARER = os.environ.get("TWITTER_BEARER", "")
 
+
 class SocialScraper:
-    def __init__(self):
+    """Fetch recent tweets and compute sentiment polarity."""
+
+    def __init__(self) -> None:
+        """Instantiate the Twitter client using ``TWITTER_BEARER``."""
+
         if not TWITTER_BEARER:
             raise RuntimeError("Missing TWITTER_BEARER in .env")
         self.client = tweepy.Client(bearer_token=TWITTER_BEARER, wait_on_rate_limit=True)
@@ -18,7 +23,9 @@ class SocialScraper:
         base = symbol.split("/")[0]
         try:
             query = f'"{base}" -is:retweet lang:en'
-            tweets = self.client.search_recent_tweets(query=query, max_results=min(n, 100)).data or []
+            tweets = (
+                self.client.search_recent_tweets(query=query, max_results=min(n, 100)).data or []
+            )
             return [t.text for t in tweets]
         except Exception as exc:
             print(f"[Sentiment] Failed to fetch tweets for {base}: {exc}")

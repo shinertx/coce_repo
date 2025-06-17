@@ -13,11 +13,11 @@ logger = logging.getLogger(__name__)
 
 
 def load_cfg(path: str) -> Dict[str, Any]:
+    """Parse a YAML config file for the convex sleeve."""
+
     with open(path) as f:
         data = yaml.safe_load(f)
     return cast(Dict[str, Any], data)
-
-
 
 
 def run_convex(
