@@ -11,4 +11,4 @@ jobs:
     - run: poetry install
     - run: poetry run ruff check .
     - run: poetry run mypy src
-    - run: poetry run pytest --cov=src --cov-fail-under=85
+    - run: poetry run pytest --cov=src --cov-fail-under=92
