@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 class CcxtRouter:
     """Thin wrapper over ccxt for order placement."""
 
-    def __init__(self, exchange: str = "binance") -> None:
+    def __init__(self, exchange: str = "kraken") -> None:
         """Connect to the specified exchange using API keys from the environment."""
 
         klass = getattr(ccxt, exchange)
