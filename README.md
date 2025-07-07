@@ -1,72 +1,56 @@
-# Cluster Outlier Catalyst Engine (COCE) · v0.3
+# Cluster Outlier Catalyst Engine (COCE)
 
-Quant strategy for micro‑cap pump detection and risk‑controlled execution.
+[![CI](https://github.com/OWNER/REPO/actions/workflows/ci.yml/badge.svg)]
+(https://github.com/OWNER/REPO/actions/workflows/ci.yml)
+[![License](https://img.shields.io/badge/license-unlicensed-lightgrey.svg)](#license)
 
 ## Overview
+COCE detects pump events in micro-cap assets using social sentiment and liquidity signals. It
+allocates capital with cluster-aware risk guardrails and can route trades through a convexity
+sleeve for deep out-of-the-money options exposure.
 
-COCE ingests spot data, social sentiment and liquidity metrics to flag potential
-micro‑cap pumps. Signals are passed through cluster‑aware allocation and strict
-risk checks before orders execute via CCXT. A convexity sleeve trades deep‑OTM
-options on Deribit for extra tail exposure. Weekly performance is audited by a
-kill‑switch meta controller.
+## Architecture & Core Concepts
+- **Pump model**: logistic classifier trained on volume and sentiment features.
+- **Consensus clusters**: Louvain partitions ensure decorrelated allocations.
+- **HRP allocation**: hierarchical risk parity with turnover limits.
+- **Risk guardrails**: ADV cap, drawdown tracker, historical VaR floor and correlation spike
+  sentinel.
+- **Meta kill-switch**: trading halted if 7‑day Sharpe < 1.2 or hit rate < 0.6.
 
-## Core Concepts
-
-- **Pump model** – ARIMA filter + logistic classifier trained on volume and
-  sentiment features.
-- **Consensus clusters** – rolling Louvain partitions ensure decorrelated
-  allocations.
-- **HRP allocation** – hierarchical risk parity with per‑cluster cap and
-  turnover limiter.
-- **Risk guardrails** – ADV limit, drawdown tracker, historical VaR floor and
-  correlation spike sentinel.
-- **Meta kill‑switch** – trades halted if 7‑day Sharpe < 1.2 or hit‑rate < 0.6.
-
-## Directory Layout
-
+## Directory Map
 ```
-config/             # YAML single source of truth
-infra/              # ci.yml and Dockerfile
-sim/                # back‑test scripts
-src/
-  agent/            # run_agent entrypoint & controllers
+config/             # YAML configuration
+infra/              # CI workflow and Dockerfile
+sim/                # back-test scripts
+src/                # main package
+  agent/            # orchestrators
   options/          # convexity sleeve
-  execution/        # CCXT routers, slippage
+  execution/        # exchange adapters
   network_analysis/ # clustering & graphs
-  alpha/            # feature engineering & classifier
+  alpha/            # feature engineering & ML classifier
   portfolio/        # allocators
-  risk_guardrails/  # all risk checks
-  data_ingest/      # loaders and scrapers
-  universe/         # asset universe filters
+  risk_guardrails/  # risk checks
+  data_ingest/      # raw data loaders
+  universe/         # asset filters
   state/            # persistence helpers
-  utils/            # logging and config validation
-tests/              # pytest suite (coverage ≥ 90 %)
+  utils/            # logging & config validation
+tests/              # pytest suite
 ```
-
-Key files:
-- `src/agent/run_agent.py` – main orchestration
-- `src/agent/convex_controller.py` – convexity sleeve runner
-- `src/state/persistence.py` – saves `data/state.json`
-- `config/base.yaml` and `config/sleeve.yaml` – default parameters
 
 ## Environment Variables
+| Name | Default | Description |
+|-----|---------|-------------|
+| `EXCHANGE_API_KEY` | - | CEX API key for spot trades |
+| `EXCHANGE_API_SECRET` | - | CEX API secret |
+| `DERIBIT_CLIENT_ID` | - | Deribit API client ID |
+| `DERIBIT_CLIENT_SECRET` | - | Deribit API secret |
+| `TWITTER_BEARER` | "" | Twitter API bearer token |
+| `COINGECKO_API_KEY` | "" | Optional CoinGecko API key |
+| `SENTRY_DSN` | - | Sentry reporting DSN |
+| `SLACK_WEBHOOK_URL` | - | Slack notifications |
+| `LOG_LEVEL` | "INFO" | Override logging level |
 
-Copy `.env.example` and fill the values:
-
-| Variable              | Purpose                     |
-|---------------------- |-----------------------------|
-| `EXCHANGE_API_KEY`    | CEX API key for spot trades |
-| `EXCHANGE_API_SECRET` | CEX API secret              |
-| `DERIBIT_CLIENT_ID`   | Deribit API client id       |
-| `DERIBIT_CLIENT_SECRET` | Deribit API secret        |
-| `TWITTER_BEARER`      | Twitter API bearer token    |
-| `COINGECKO_API_KEY`   | CoinGecko API key (optional) |
-| `SENTRY_DSN`          | Sentry error reporting      |
-| `SLACK_WEBHOOK_URL`   | Slack notifications         |
-| `LOG_LEVEL`           | Override logging level      |
-
-## Local Development
-
+## Local Dev Setup
 ```bash
 poetry install --with dev
 cp .env.example .env  # fill keys
@@ -76,62 +60,57 @@ poetry run pytest --cov=src --cov-fail-under=90
 docker build .  # optional
 ```
 
-## Quick‑start / Testnet
-
-Run the agent in simulation:
-
+## Quick-Start / Testnet Guide
+### Local via Poetry
 ```bash
-python -m src.agent.run_agent --mode sim --config config/base.yaml
+poetry install && poetry run python -m src.agent.run_agent --mode sim
+```
+### Docker
+```bash
+docker build -t coce .
+docker run -e $(grep -v '^#' config/base.yaml | xargs) coce
 ```
 
-Run only the convexity sleeve:
-
-```bash
-python -m src.agent.run_agent --sleeve convex
-```
-
-Back‑testing helpers live under `sim/`.
-
-## Production Checklist
-
-- All environment variables populated and configs reviewed.
-- Validate configs via `validate_cfg` (imported on startup).
-- Run lint, type check, tests and Docker build as above.
-- Monitor `logs/trades.jsonl` and `logs/meta_events.jsonl` for liveness.
-- Check `data/state.json` for persisted equity curve.
+## Production Checklist & Liveness
+- Ensure all environment variables are populated.
+- Validate configs on startup (`validate_cfg`).
+- CI jobs in `infra/ci.yml` must pass before deploy.
+- Monitor `logs/*.jsonl` and `data/state.json` for health.
 
 ## Commands Reference
+| Command | Description |
+|---------|-------------|
+| `python -m src.agent.run_agent --mode sim` | Run core engine in simulation |
+| `python -m src.agent.run_agent --sleeve convex` | Execute convexity sleeve |
+| `poetry run pytest` | Run unit tests |
+| `docker build .` | Build production image |
 
-| Command                                          | Description                 |
-|--------------------------------------------------|-----------------------------|
-| `python -m src.agent.run_agent --mode sim`       | Run core engine in sim mode |
-| `python -m src.agent.run_agent --sleeve convex`  | Execute convexity sleeve    |
-| `poetry run pytest`                              | Run unit tests              |
-| `docker build .`                                 | Build production image      |
-
-## Post‑deploy Actions
-
-- Verify Sentry and Slack hooks receive events.
+## Post-Deploy Actions
+- Verify Sentry and Slack webhooks receive events.
 - Archive `logs/*.jsonl` and `data/state.json` for audit.
-- Review `logs/meta_events.jsonl` weekly for kill‑switch events.
+- Review `logs/meta_events.jsonl` weekly for kill-switch triggers.
 
-## Risk Warnings / Kill‑switch
+## Risk Warnings / Kill-Switch
+### Audit Status
+See `AUDIT.md` for the latest audit diary. Current version 0.3 notes coverage 92 %.
+### Legal Disclaimer
+> WARN
+> This repository is for research. Deploying live capital without independent review may
+> result in loss of funds. Use at your own risk.
 
-- `risk.max_drawdown_pct` ≤ 18
-- `risk.adv_cap_pct` ≤ 2
-- `sleeve.budget_pct_nav` ≤ 0.5
-- Meta controller may halt trading if performance degrades.
-- Use at your own risk; no live funds recommended without further review.
+## Upgrade Path & Versioning
+- SemVer tags in `pyproject.toml` govern releases.
+- Models retrain monthly using latest labeled pump events.
 
-## Upgrade Path
+## Testing & CI Matrix
+- `pytest` suite covers all modules with ≥ 90 % coverage.
+- Simulation scripts in `sim/` validate new strategies offline.
+- GitHub Actions (`infra/ci.yml`) runs ruff, mypy and pytest with 92 % coverage gate.
 
-1. Edit configs as needed and bump version in `pyproject.toml`.
-2. Run full validation suite and update `AUDIT.md` with changes.
-3. Redeploy Docker image.
+## Contributing & FAQ
+Follow `AGENTS.md` for code style and pull request template. Coverage must remain ≥ 90 %.
 
-## Contributing / FAQ
+## License
+No license file present. Contact maintainers for usage terms.
 
-Pull requests must use the template in `AGENTS.md` and keep coverage ≥ 90 %.
-If tests fail, check environment variables and dependency versions.
-
-License: not provided – contact maintainers for terms.
+✅ README draft complete
