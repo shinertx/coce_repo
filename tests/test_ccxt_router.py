@@ -1,7 +1,12 @@
 from src.execution.ccxt_router import CcxtRouter
 
 
+def _fake_secret(key: str) -> str:
+    return "x"
+
+
 def test_ccxt_router(monkeypatch):
+    monkeypatch.setattr("src.execution.ccxt_router.get_secret", _fake_secret)
     router = CcxtRouter()
     called = {}
     monkeypatch.setattr(router.client, "create_limit_order", lambda s, side, size, price: called.setdefault("limit", price))

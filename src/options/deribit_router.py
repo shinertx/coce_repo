@@ -1,15 +1,12 @@
 from __future__ import annotations
 
-import os
 from typing import Any, Dict, Mapping, cast
 
 import requests
 from requests.adapters import HTTPAdapter
 from requests.exceptions import RequestException
 from urllib3.util import Retry
-from dotenv import load_dotenv
-
-load_dotenv()
+from src.infra.secret_provider import get_secret
 
 
 class DeribitRouter:
@@ -20,10 +17,8 @@ class DeribitRouter:
     def __init__(self) -> None:
         """Create a session and authenticate using environment credentials."""
 
-        self.client_id: str | None = os.getenv("DERIBIT_CLIENT_ID")
-        self.client_secret: str | None = os.getenv("DERIBIT_CLIENT_SECRET")
-        if not self.client_id or not self.client_secret:
-            raise ValueError("Missing Deribit credentials")
+        self.client_id: str = get_secret("DERIBIT_CLIENT_ID")
+        self.client_secret: str = get_secret("DERIBIT_CLIENT_SECRET")
 
         self.session = requests.Session()
         adapter = HTTPAdapter(

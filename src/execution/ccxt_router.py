@@ -1,12 +1,9 @@
 from __future__ import annotations
 
 import logging
-import os
 
 import ccxt
-from dotenv import load_dotenv
-
-load_dotenv()
+from src.infra.secret_provider import get_secret
 logger = logging.getLogger(__name__)
 
 
@@ -18,7 +15,7 @@ class CcxtRouter:
 
         klass = getattr(ccxt, exchange)
         self.client = klass(
-            {"apiKey": os.getenv("EXCHANGE_API_KEY"), "secret": os.getenv("EXCHANGE_API_SECRET")}
+            {"apiKey": get_secret("EXCHANGE_API_KEY"), "secret": get_secret("EXCHANGE_API_SECRET")}
         )
 
     def place_order(self, symbol: str, side: str, size: float, price: float | None = None):
