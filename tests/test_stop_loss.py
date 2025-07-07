@@ -30,7 +30,7 @@ def test_stop_loss(monkeypatch):
     alt = pd.DataFrame({"ALT": [0.1, 0.1, 0.1]})
     tm.execute_signal("BTC", 0.9, price1, 1_000_000, btc, alt, 1)
 
-    price2 = pd.Series([100, 90])
-    tm.execute_signal("BTC", 0.9, price2, 1_000_000, btc, alt, 0)
+    for price in [100, 90]:
+        tm.monitor_position("BTC", price)
 
     assert any(call[1] == "sell" for call in calls)
