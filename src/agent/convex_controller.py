@@ -40,7 +40,7 @@ def run_convex(
         price = opt["price"]
         size = opt.get("size", 1.0)
         premium = price * size
-        if pm.budget_spent + premium > budget:
+        if pm.open_premium() + premium > budget:
             logger.info("Budget exhausted")
             continue
         try:

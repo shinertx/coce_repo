@@ -99,7 +99,8 @@ class TradeManager:
         logger.info(trade.__dict__)
         if risk_pass:
             try:
-                self.router.place_order(symbol, "buy", size)
+                # pass explicit execution price to enforce slippage bounds
+                self.router.place_order(symbol, "buy", size, price_exec)
                 self.drawdown.update([price_exec / price - 1])
             except Exception as exc:
                 logger.error("Order failed %s", exc)

@@ -20,6 +20,7 @@ from ..universe.filter import UniverseFilter
 from ..utils.logging_utils import setup_logging
 from ..utils.config_validation import validate_cfg
 from ..execution.trade_manager import TradeManager
+from .meta_controller import MetaController
 
 setup_logging()
 logger = logging.getLogger(__name__)
@@ -75,6 +76,7 @@ def main() -> None:
     turnover = TurnoverLimiter(cap_pct_nav=cfg["risk"]["turnover_cap_pct"])
     capital = cfg["capital_usd"]
     tm = TradeManager(capital, cfg["risk"])
+    meta = MetaController()
 
     end = datetime.utcnow()
     start = end - timedelta(days=120)
@@ -123,6 +125,9 @@ def main() -> None:
                 slice_df[reps],
                 weights.get(sym, 0),
             )
+
+        # enforce weekly performance kill-switch
+        meta.evaluate()
 
 
 if __name__ == "__main__":

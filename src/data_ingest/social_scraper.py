@@ -26,7 +26,11 @@ class SocialScraper:
             tweets = (
                 self.client.search_recent_tweets(query=query, max_results=min(n, 100)).data or []
             )
-            return [t.text for t in tweets]
+            sanitized = []
+            for t in tweets:
+                text = t.text.replace("\n", " ")[:280]
+                sanitized.append(text.encode("utf-8", "ignore").decode("utf-8"))
+            return sanitized
         except Exception as exc:
             print(f"[Sentiment] Failed to fetch tweets for {base}: {exc}")
             return []
@@ -38,7 +42,8 @@ class SocialScraper:
         if not posts:
             return 0.0
         try:
-            polarities = [TextBlob(p).sentiment.polarity for p in posts]
+            clean = [p[:280] for p in posts]
+            polarities = [TextBlob(p).sentiment.polarity for p in clean]
             return sum(polarities) / len(polarities)
         except Exception as exc:
             print(f"[Sentiment] Error computing polarity: {exc}")
