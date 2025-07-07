@@ -8,3 +8,6 @@
 * HRP weights integrated into TradeManager sizing
 * Persistent state added
 * Coverage 92 %, CI gate 90 %
+
+## v0.3.1 (2025-07-08)
+* Sleeve disabled by default via config flag

@@ -12,8 +12,8 @@ class DummyTweepy:
 
 sys.modules.setdefault("tweepy", DummyTweepy)
 
-from src.data_ingest import social_scraper
-from src.data_ingest.social_scraper import SocialScraper
+from src.data_ingest import social_scraper  # noqa: E402
+from src.data_ingest.social_scraper import SocialScraper  # noqa: E402
 
 
 class DummyClient:
