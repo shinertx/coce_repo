@@ -162,6 +162,23 @@ Agents should **not** edit GitHub Actions unless the task explicitly states so.
 * **Dev infra** – `infra/` owner: `@devops‑svc`
 
 ---
+## 11\u2003Core Roles & Responsibilities
+
+* **AI CTO / Red Team / Architect** – End-to-end oversight; adversarially reviews
+  all modules; runs chaos drills, disaster recovery, and risk hunts; code ships only
+  with sign-off.
+* **Quant Researcher / Alpha Engineer** – Designs and tests strategies; hunts new
+  MEV/MVV; validates alpha and prunes weak performers.
+* **AI/ML Lead** – Integrates LLMs across strategy mutation, audit, ops, logging,
+  and anomaly checks.
+* **Security/Infra Engineer** – Maintains portable infra and monitoring; automates
+  recovery and state export; manages secrets and leads incident response.
+* **Protocol/Integration Engineer** – Builds adapters for chains, DEX/CEX,
+  bridges, and sequencers; exploits quirks and attack vectors.
+* **LiveOps / Recovery & Compliance** – Keeps audit-ready logs, runs DRP drills,
+  exports compliance data, and gates live scaling.
+* Every domain must be covered; if any role lacks coverage, flag it and propose a fix.
+---
 
 *Keep this file up to date with every structural change so human and AI contributors have a reliable contract.*
 ::contentReference[oaicite:0]{index=0}
