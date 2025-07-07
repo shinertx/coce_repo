@@ -6,6 +6,7 @@ from typing import Dict
 import pandas as pd
 from ..execution.slippage import sqrt_slippage
 from ..risk_guardrails.liquidity_limits import adv_cap_check
+from ..risk_guardrails.orderbook_depth import executable_size
 from ..risk_guardrails.max_drawdown import DrawdownTracker
 from ..risk_guardrails.var_check import hist_var_check
 from ..risk_guardrails.corr_spike import CorrSpikeSentinel
@@ -97,6 +98,18 @@ class TradeManager:
             return None
 
         size = order_usd / price
+        adv_cap = adv_usd * self.risk_cfg["adv_cap_pct"] / 100 / price
+        size = min(size, adv_cap)
+
+        depth_pct = self.risk_cfg.get("depth_impact_pct", 1.0)
+        try:
+            book = self.router.client.fetch_order_book(symbol)
+            depth_cap = executable_size(book, "buy", depth_pct)
+            size = min(size, depth_cap)
+        except Exception as exc:  # pragma: no cover - network errors
+            logger.warning("orderbook fetch failed %s", exc)
+
+        order_usd = size * price
         slip_frac = sqrt_slippage(order_usd, adv_usd)
         price_exec = price * (1 + slip_frac)
 
