@@ -31,6 +31,13 @@ class Trade:
     slip_bps: float
 
 
+@dataclass
+class SpotPosition:
+    symbol: str
+    size: float
+    entry: float
+
+
 class TradeManager:
     """Handle order placement and risk checks."""
 
@@ -41,12 +48,30 @@ class TradeManager:
         self.router = CcxtRouter()
         self.drawdown = DrawdownTracker(capital_usd)
         self.sentinel = CorrSpikeSentinel(threshold=risk_cfg["corr_spike_thresh"])
+        self.stop_loss_pct = risk_cfg.get("stop_loss_pct", 0.0)
+        self.positions: Dict[str, SpotPosition] = {}
         state = load_state()
         if state and "equity_curve" in state:
             self.drawdown.equity_curve = state["equity_curve"]
 
     def _persist(self) -> None:
         save_state({"equity_curve": self.drawdown.equity_curve})
+
+    def _check_stop_loss(self, symbol: str, price: float) -> None:
+        if self.stop_loss_pct <= 0:
+            return
+        pos = self.positions.get(symbol)
+        if not pos:
+            return
+        if price <= pos.entry * (1 - self.stop_loss_pct / 100):
+            try:
+                self.router.place_order(symbol, "sell", pos.size, price)
+                self.drawdown.update([price / pos.entry - 1])
+                logger.info("Stop-loss executed for %s", symbol)
+            except Exception as exc:
+                logger.error("Stop-loss order failed %s", exc)
+            del self.positions[symbol]
+            self._persist()
 
     def execute_signal(
         self,
@@ -65,6 +90,8 @@ class TradeManager:
             return None
 
         price = price_series.iloc[-1]
+        self._check_stop_loss(symbol, price)
+
         order_usd = max(self.capital * weight, 0)
         if order_usd == 0:
             return None
@@ -102,6 +129,7 @@ class TradeManager:
                 # pass explicit execution price to enforce slippage bounds
                 self.router.place_order(symbol, "buy", size, price_exec)
                 self.drawdown.update([price_exec / price - 1])
+                self.positions[symbol] = SpotPosition(symbol, size, price_exec)
             except Exception as exc:
                 logger.error("Order failed %s", exc)
             self._persist()

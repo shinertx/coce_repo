@@ -1,5 +1,6 @@
 from pathlib import Path
 import json
+import os
 from typing import Any, Dict, cast
 
 _STATE = Path("data/state.json")
@@ -12,6 +13,8 @@ def save_state(obj: Dict[str, Any]) -> None:
     tmp = _STATE.with_suffix(".tmp")
     with tmp.open("w") as f:
         json.dump(obj, f)
+        f.flush()
+        os.fsync(f.fileno())
     tmp.replace(_STATE)
 
 

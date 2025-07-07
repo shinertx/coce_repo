@@ -61,15 +61,14 @@ class DeribitRouter:
     ) -> Dict[str, Any]:
         """Place a limit order and return the API response."""
 
-        resp = self._post(
-            f"private/{'buy' if side == 'buy' else 'sell'}",
-            {
-                "instrument_name": symbol,
-                "amount": str(size),
-                "type": "limit",
-                "price": str(price) if price is not None else None,
-            },
-        )
+        params = {
+            "instrument_name": symbol,
+            "amount": str(size),
+            "type": "limit",
+        }
+        if price is not None:
+            params["price"] = str(price)
+        resp = self._post(f"private/{'buy' if side == 'buy' else 'sell'}", params)
         return cast(Dict[str, Any], resp.json())
 
     # ------------------------------------------------------------------

@@ -29,7 +29,11 @@ class MetaController:
         week = df[df["ts"] > (pd.Timestamp.utcnow() - pd.Timedelta(days=7))]
         if week.empty:
             return
-        sharpe = week["pnl"].mean() / week["pnl"].std(ddof=0)
+        std = week["pnl"].std(ddof=0)
+        if std == 0:
+            sharpe = float("inf")
+        else:
+            sharpe = week["pnl"].mean() / std
         hit = (week["pnl"] > 0).mean()
         evt = {"ts": pd.Timestamp.utcnow().isoformat(), "sharpe": sharpe, "hit": hit}
         with _LOG.open("a") as f:
