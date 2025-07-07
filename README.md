@@ -15,7 +15,8 @@ sleeve for deep out-of-the-money options exposure.
 - **HRP allocation**: hierarchical risk parity with turnover limits.
 - **Risk guardrails**: ADV cap, drawdown tracker, historical VaR floor and correlation spike
   sentinel.
-- **Meta kill-switch**: trading halted if 7‑day Sharpe < 1.2 or hit rate < 0.6.
+- **Meta kill-switch**: trading halted if 7‑day Sharpe **and** hit rate drop below
+  their thresholds (1.2 Sharpe and 0.6 hit rate by default).
 
 ## Directory Map
 ```

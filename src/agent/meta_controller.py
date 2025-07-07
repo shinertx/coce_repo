@@ -4,9 +4,11 @@ import json
 import logging
 from pathlib import Path
 import pandas as pd
+import yaml  # type: ignore
 
 logger = logging.getLogger(__name__)
 _LOG = Path("logs/meta_events.jsonl")
+
 
 class MetaController:
     """Weekly performance auditor with kill-switch enforcement."""
@@ -16,10 +18,12 @@ class MetaController:
         trade_log: Path = Path("logs/trades.jsonl"),
         sharpe_floor: float = 1.0,
         hitrate_floor: float = 0.5,
+        override_file: Path = Path("state/override.yaml"),
     ) -> None:
         self.trade_log = trade_log
         self.sharpe_floor = sharpe_floor
         self.hitrate_floor = hitrate_floor
+        self.override_file = override_file
 
     def evaluate(self) -> None:
         if not self.trade_log.exists():
@@ -39,5 +43,14 @@ class MetaController:
         with _LOG.open("a") as f:
             f.write(json.dumps(evt) + "\n")
         logger.info("Meta eval %s", evt)
-        if sharpe < self.sharpe_floor or hit < self.hitrate_floor:
+        override = False
+        if self.override_file.exists():
+            try:
+                with self.override_file.open() as f:
+                    data = yaml.safe_load(f) or {}
+                override = bool(data.get("disable_kill_switch"))
+            except Exception:  # pragma: no cover - invalid override file
+                override = False
+
+        if not override and sharpe < self.sharpe_floor and hit < self.hitrate_floor:
             raise RuntimeError("Kill-switch triggered")
