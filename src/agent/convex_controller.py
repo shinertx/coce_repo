@@ -8,6 +8,7 @@ import yaml  # type: ignore
 from ..options.deribit_router import DeribitRouter
 from ..options.position_manager import PositionManager
 from ..options.screener import find_candidates
+from src.infra import send_alert
 
 logger = logging.getLogger(__name__)
 
@@ -42,6 +43,7 @@ def run_convex(
         premium = price * size
         if pm.open_premium() + premium > budget:
             logger.info("Budget exhausted")
+            send_alert("Convex sleeve budget exhausted")
             continue
         try:
             router.place_order(opt["symbol"], "buy", size, price)

@@ -6,6 +6,7 @@ import ccxt
 import pandas as pd
 import logging
 import time
+from src.infra import send_alert
 
 
 class PriceLoader:
@@ -43,6 +44,7 @@ class PriceLoader:
                 self.logger.warning("fetch_ohlcv failed: %s", exc)
                 time.sleep(0.5)
         else:
+            send_alert(f"CCXT fetch failed for {symbol}")
             raise RuntimeError(f"failed to fetch {symbol}") from last_exc
 
         df = pd.DataFrame(ohlcv, columns=["ts", "o", "h", "l", "c", "v"])
