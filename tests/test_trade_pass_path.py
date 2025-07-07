@@ -2,6 +2,10 @@ import pandas as pd
 from src.execution.trade_manager import TradeManager, Trade
 
 
+def _fake_secret(key: str) -> str:
+    return "x"
+
+
 def test_execute_trade_pass_path(monkeypatch, price_series):
     """TradeManager returns Trade on risk pass and updates drawdown."""
     # disable persistence
@@ -9,6 +13,7 @@ def test_execute_trade_pass_path(monkeypatch, price_series):
     monkeypatch.setattr("src.execution.trade_manager.save_state", lambda state: None)
 
     risk_cfg = {"max_drawdown_pct": 18, "adv_cap_pct": 2, "var_confidence": 0.95, "corr_spike_thresh": 1.0}
+    monkeypatch.setattr("src.execution.ccxt_router.get_secret", _fake_secret)
     tm = TradeManager(10000, risk_cfg)
 
     monkeypatch.setattr(tm.router, "place_order", lambda symbol, side, size, price=None: None)

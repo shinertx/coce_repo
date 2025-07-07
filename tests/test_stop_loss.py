@@ -2,6 +2,10 @@ import pandas as pd
 from src.execution.trade_manager import TradeManager
 
 
+def _fake_secret(key: str) -> str:
+    return "x"
+
+
 def test_stop_loss(monkeypatch):
     risk = {
         "max_drawdown_pct": 18,
@@ -10,6 +14,7 @@ def test_stop_loss(monkeypatch):
         "corr_spike_thresh": 1.0,
         "stop_loss_pct": 10,
     }
+    monkeypatch.setattr("src.execution.ccxt_router.get_secret", _fake_secret)
     tm = TradeManager(1000, risk)
     monkeypatch.setattr("src.execution.trade_manager.load_state", lambda: None)
     monkeypatch.setattr("src.execution.trade_manager.save_state", lambda s: None)
