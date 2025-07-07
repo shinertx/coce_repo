@@ -12,11 +12,18 @@ def test_execute_trade_pass_path(monkeypatch, price_series):
     monkeypatch.setattr("src.execution.trade_manager.load_state", lambda: None)
     monkeypatch.setattr("src.execution.trade_manager.save_state", lambda state: None)
 
-    risk_cfg = {"max_drawdown_pct": 18, "adv_cap_pct": 2, "var_confidence": 0.95, "corr_spike_thresh": 1.0}
+    risk_cfg = {
+        "max_drawdown_pct": 18,
+        "adv_cap_pct": 2,
+        "var_confidence": 0.95,
+        "corr_spike_thresh": 1.0,
+        "depth_impact_pct": 1,
+    }
     monkeypatch.setattr("src.execution.ccxt_router.get_secret", _fake_secret)
     tm = TradeManager(10000, risk_cfg)
 
     monkeypatch.setattr(tm.router, "place_order", lambda symbol, side, size, price=None: None)
+    monkeypatch.setattr(tm.router.client, "fetch_order_book", lambda symbol: {"asks": [[1, 1]], "bids": []})
     monkeypatch.setattr(tm.sentinel, "check", lambda btc, alt: True)
     monkeypatch.setattr("src.execution.trade_manager.hist_var_check", lambda *a, **k: True)
 
