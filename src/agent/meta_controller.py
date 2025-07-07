@@ -4,6 +4,7 @@ import json
 import logging
 from pathlib import Path
 import pandas as pd
+from src.infra import send_alert
 
 logger = logging.getLogger(__name__)
 _LOG = Path("logs/meta_events.jsonl")
@@ -40,4 +41,5 @@ class MetaController:
             f.write(json.dumps(evt) + "\n")
         logger.info("Meta eval %s", evt)
         if sharpe < self.sharpe_floor or hit < self.hitrate_floor:
+            send_alert("Kill-switch triggered")
             raise RuntimeError("Kill-switch triggered")
