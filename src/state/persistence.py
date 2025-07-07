@@ -9,8 +9,10 @@ def save_state(obj: Dict[str, Any]) -> None:
     """Persist internal state safely as JSON."""
 
     _STATE.parent.mkdir(exist_ok=True)
-    with _STATE.open("w") as f:
+    tmp = _STATE.with_suffix(".tmp")
+    with tmp.open("w") as f:
         json.dump(obj, f)
+    tmp.replace(_STATE)
 
 
 def load_state() -> Dict[str, Any] | None:

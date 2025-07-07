@@ -22,10 +22,14 @@ class CorrSpikeSentinel:
         """Create sentinel with correlation ``threshold``."""
 
         self.threshold = threshold
+        self._last_write: float = 0.0
 
     def check(self, btc: pd.Series, alt_df: pd.DataFrame) -> bool:
         """Return ``True`` if trading is allowed."""
 
         med = median_btc_alt_corr(btc, alt_df) if not btc.empty else 0.0
-        _MEDIAN_CACHE.write_text(f"{med}\n")
+        now = pd.Timestamp.utcnow().timestamp()
+        if now - self._last_write > 60:
+            _MEDIAN_CACHE.write_text(f"{med}\n")
+            self._last_write = now
         return med < self.threshold
