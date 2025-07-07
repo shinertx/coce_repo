@@ -21,6 +21,7 @@ python-dotenv = "^1.0"
 tqdm = "^4.66"
 joblib = "^1.4"
 requests = "^2.32"
+langdetect = "^1.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.4"
