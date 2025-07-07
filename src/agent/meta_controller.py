@@ -9,14 +9,23 @@ logger = logging.getLogger(__name__)
 _LOG = Path("logs/meta_events.jsonl")
 
 class MetaController:
-    """Weekly performance auditor (placeholder for kill-switch)."""
-    def __init__(self, trade_log: Path = Path("logs/trades.jsonl")) -> None:
+    """Weekly performance auditor with kill-switch enforcement."""
+
+    def __init__(
+        self,
+        trade_log: Path = Path("logs/trades.jsonl"),
+        sharpe_floor: float = 1.0,
+        hitrate_floor: float = 0.5,
+    ) -> None:
         self.trade_log = trade_log
+        self.sharpe_floor = sharpe_floor
+        self.hitrate_floor = hitrate_floor
 
     def evaluate(self) -> None:
         if not self.trade_log.exists():
             return
         df = pd.read_json(self.trade_log, lines=True)
+        df["ts"] = pd.to_datetime(df["ts"], utc=True)
         week = df[df["ts"] > (pd.Timestamp.utcnow() - pd.Timedelta(days=7))]
         if week.empty:
             return
@@ -26,3 +35,5 @@ class MetaController:
         with _LOG.open("a") as f:
             f.write(json.dumps(evt) + "\n")
         logger.info("Meta eval %s", evt)
+        if sharpe < self.sharpe_floor or hit < self.hitrate_floor:
+            raise RuntimeError("Kill-switch triggered")

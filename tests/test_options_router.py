@@ -1,4 +1,5 @@
 import requests_mock
+from requests import Response
 from src.options.deribit_router import DeribitRouter
 
 
@@ -20,6 +21,17 @@ def test_deribit_router(monkeypatch):
         )
         router = DeribitRouter()
         assert router.token == "tok"
+
+        called = {}
+        real_get = router.session.get
+
+        def wrapped(url: str, **kw) -> Response:
+            called["timeout"] = kw.get("timeout")
+            return real_get(url, **kw)
+
+        router.session.get = wrapped
+
         assert router.fetch_price("BTC") == 1.1
+        assert called["timeout"] == 10
         res = router.place_order("BTC", "buy", 1, 1.1)
         assert res["result"] == "ok"

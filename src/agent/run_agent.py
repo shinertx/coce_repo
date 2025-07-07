@@ -18,6 +18,7 @@ from ..portfolio.representatives import pick_representatives
 from ..risk_guardrails.turnover import TurnoverLimiter
 from ..universe.filter import UniverseFilter
 from ..utils.logging_utils import setup_logging
+from ..utils.config_validation import validate_cfg
 from ..execution.trade_manager import TradeManager
 
 setup_logging()
@@ -51,6 +52,7 @@ def main() -> None:
     p.add_argument("--config", default="config/base.yaml")
     args = p.parse_args()
     cfg = load_cfg(args.config)
+    validate_cfg(cfg)
 
     if args.sleeve == "convex":
         from .convex_controller import run_convex
