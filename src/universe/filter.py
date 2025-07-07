@@ -20,7 +20,7 @@ class UniverseFilter:
         *,
         min_adv_usd: float,
         min_mcap_usd: float,
-        exchange: str = "binance",
+        exchange: str = "kraken",
         supply_fetcher: Callable[[str], float] = coingecko_supply,
     ) -> None:
         self.min_adv, self.min_mcap = min_adv_usd, min_mcap_usd

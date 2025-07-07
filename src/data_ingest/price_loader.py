@@ -11,7 +11,7 @@ import time
 class PriceLoader:
     """Fetch OHLCV data from exchanges via ccxt."""
 
-    def __init__(self, exchange: str = "binance") -> None:
+    def __init__(self, exchange: str = "kraken") -> None:
         """Initialize loader with the given exchange."""
 
         self.ex = getattr(ccxt, exchange)()
