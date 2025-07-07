@@ -5,3 +5,4 @@ logs/
 dist/
 *.egg-info/
 .coverage
+.DS_Store
