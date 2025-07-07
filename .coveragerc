@@ -1,10 +1,9 @@
 [run]
 omit =
-    src/agent/*
-    src/alpha/*
-    src/data_ingest/*
-    src/execution/*
+    src/agent/run_agent.py
+    src/alpha/trainer.py
     src/network_analysis/*
-    src/portfolio/*
-    src/risk_guardrails/*
-    src/utils/*
+    src/execution/ccxt_router.py
+    src/portfolio/representatives.py
+    src/utils/config_validation.py
+    src/data_ingest/social_scraper.py
