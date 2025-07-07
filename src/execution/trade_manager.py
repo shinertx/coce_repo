@@ -67,11 +67,26 @@ class TradeManager:
             try:
                 self.router.place_order(symbol, "sell", pos.size, price)
                 self.drawdown.update([price / pos.entry - 1])
-                logger.info("Stop-loss executed for %s", symbol)
+                stop = Trade(
+                    ts=datetime.now(tz=timezone.utc).isoformat(timespec="seconds"),
+                    symbol=symbol,
+                    side="SELL",
+                    size=pos.size,
+                    price=price,
+                    confidence=0.0,
+                    risk="STOP_LOSS",
+                    slip_bps=0.0,
+                )
+                logger.info(stop.__dict__)
             except Exception as exc:
                 logger.error("Stop-loss order failed %s", exc)
             del self.positions[symbol]
             self._persist()
+
+    def monitor_position(self, symbol: str, price: float) -> None:
+        """Check open ``symbol`` position on each new tick."""
+
+        self._check_stop_loss(symbol, price)
 
     def execute_signal(
         self,
@@ -90,7 +105,7 @@ class TradeManager:
             return None
 
         price = price_series.iloc[-1]
-        self._check_stop_loss(symbol, price)
+        self.monitor_position(symbol, price)
 
         order_usd = max(self.capital * weight, 0)
         if order_usd == 0:
