@@ -49,13 +49,22 @@ def main() -> None:
 
     p = argparse.ArgumentParser()
     p.add_argument("--mode", choices=["sim"], default="sim")
-    p.add_argument("--sleeve", choices=["none", "convex"], default="none")
+    p.add_argument(
+        "--sleeve",
+        choices=["none", "convex"],
+        default=None,
+        help="override sleeve setting from config",
+    )
     p.add_argument("--config", default="config/base.yaml")
     args = p.parse_args()
     cfg = load_cfg(args.config)
     validate_cfg(cfg)
 
-    if args.sleeve == "convex":
+    sleeve_choice = args.sleeve
+    if sleeve_choice is None:
+        sleeve_choice = "convex" if cfg.get("sleeve", {}).get("enabled", False) else "none"
+
+    if sleeve_choice == "convex":
         from .convex_controller import run_convex
 
         run_convex(cfg["capital_usd"], "config/sleeve.yaml")

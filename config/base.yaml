@@ -22,3 +22,6 @@ model:
 meta:
   sharpe_floor: 1.2
   hitrate_floor: 0.6
+sleeve:
+  budget_pct_nav: 0.5
+  enabled: false
